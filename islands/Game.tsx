@@ -1,5 +1,5 @@
 import { useState } from "preact/hooks";
-import { Board } from "./Board.tsx";
+import { ReversiBoard } from "./ReversiBoard.tsx";
 import StartScreen from "./StartScreen.tsx";
 
 export function Game() {
@@ -21,7 +21,8 @@ export function Game() {
             <h2>Reversi Game</h2>
             <p>Player Color: {playerColor}</p>
             <p>AI Strength: {aiStrength}</p>
-            <Board></Board>
+            <ReversiBoard playerColor={playerColor} aiStrength={aiStrength}>
+            </ReversiBoard>
           </div>
         )
         : <StartScreen onStartGame={startGame} />}

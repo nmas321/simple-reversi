@@ -6,18 +6,26 @@ const reversi = new Reversi();
 const BoardItemSize = 72;
 const BoardSize = BoardItemSize * 8;
 
-function getRowCol(ev: MouseEvent): [number, number] {
-  const canvas = ev.target as HTMLCanvasElement;
-  const rect = canvas.getBoundingClientRect();
-  const x = ev.clientX - rect.left;
-  const y = ev.clientY - rect.top;
-
-  return [Math.floor(x / (rect.width / 8)), Math.floor(y / (rect.height / 8))];
+interface ReversiBoardProps {
+  playerColor: string;
+  aiStrength: string;
 }
 
-export function Board() {
+export function ReversiBoard(props: ReversiBoardProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
+
+  function getRowCol(ev: MouseEvent): [number, number] {
+    const canvas = ev.target as HTMLCanvasElement;
+    const rect = canvas.getBoundingClientRect();
+    const x = ev.clientX - rect.left;
+    const y = ev.clientY - rect.top;
+
+    return [
+      Math.floor(x / (rect.width / 8)),
+      Math.floor(y / (rect.height / 8)),
+    ];
+  }
 
   function onclick(ev: MouseEvent): any {
     // if (!reversi.isUserTurn()) {
