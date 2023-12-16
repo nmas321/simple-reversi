@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { Reversi } from "../components/Reversi.ts";
-import { RefactorEditInfo } from "https://deno.land/x/ts_morph@20.0.0/ts_morph.js";
 
 const reversi = new Reversi();
 
