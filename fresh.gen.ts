@@ -8,6 +8,8 @@ import * as $api_joke from "./routes/api/joke.ts";
 import * as $greet_name_ from "./routes/greet/[name].tsx";
 import * as $index from "./routes/index.tsx";
 import * as $Board from "./islands/Board.tsx";
+import * as $Game from "./islands/Game.tsx";
+import * as $StartScreen from "./islands/StartScreen.tsx";
 import { type Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -20,6 +22,8 @@ const manifest = {
   },
   islands: {
     "./islands/Board.tsx": $Board,
+    "./islands/Game.tsx": $Game,
+    "./islands/StartScreen.tsx": $StartScreen,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

@@ -1,4 +1,4 @@
-import { Board } from "../islands/Board.tsx";
+import { Game } from "../islands/Game.tsx";
 
 export default function Home() {
   return (
@@ -9,7 +9,7 @@ export default function Home() {
           width="128"
           height="128"
         />
-        <Board></Board>
+        <Game></Game>
       </div>
     </div>
   );

@@ -1,35 +1,34 @@
-type Turn = 'b' | 'w';
-type SquareState = Turn | '-' | 'h';
+type Turn = "b" | "w";
+type SquareState = Turn | "-" | "h";
 
 export class Reversi {
-    private Direction = [
-        [-1, -1],
-        [-1, 0],
-        [-1, 1],
-        [0, 1],
-        [0, -1],
-        [1, -1],
-        [1, 0],
-        [1, 1],
-      ];
+  private Direction = [
+    [-1, -1],
+    [-1, 0],
+    [-1, 1],
+    [0, 1],
+    [0, -1],
+    [1, -1],
+    [1, 0],
+    [1, 1],
+  ];
 
   private canPutDirection(rc: [number, number], i: number, j: number): boolean {
     let x = rc[0] + i;
     let y = rc[1] + j;
-    if(!this.within(x, y)) return false;
-    
-    while(this.within(x, y) && this.board[x][y] === this.b(this.turn))
-    {
-        x += i;
-        y += j;
+    if (!this.within(x, y)) return false;
+
+    while (this.within(x, y) && this.board[x][y] === this.b(this.turn)) {
+      x += i;
+      y += j;
     }
 
     return !((x === (rc[0] + i) && y === (rc[1] + j)) || !this.within(x, y) ||
-        this.board[x][y] != this.turn);
+      this.board[x][y] != this.turn);
   }
 
   public canPut(rc: [number, number]): boolean {
-    if (this.board[rc[0]][rc[1]] != '-') {
+    if (this.board[rc[0]][rc[1]] != "-") {
       return false;
     }
     for (const d of this.Direction) {
@@ -39,37 +38,35 @@ export class Reversi {
     }
     return false;
   }
-  
-  private within(x: number, y: number)
-  {
+
+  private within(x: number, y: number) {
     return x >= 0 && x <= 7 && y >= 0 && y <= 7;
   }
 
   private putDirection(rc: [number, number], i: number, j: number): void {
     let x = rc[0] + i;
     let y = rc[1] + j;
-    if(!this.within(x, y)) return;
+    if (!this.within(x, y)) return;
 
-    while(this.within(x, y) && this.board[x][y] === this.b(this.turn))
-    {
-        x += i;
-        y += j;
+    while (this.within(x, y) && this.board[x][y] === this.b(this.turn)) {
+      x += i;
+      y += j;
     }
 
-    if((x === (rc[0] + i) && y === (rc[1] + j)) || !this.within(x, y) ||
-        this.board[x][y] != this.turn)
-    {
-        return;
+    if (
+      (x === (rc[0] + i) && y === (rc[1] + j)) || !this.within(x, y) ||
+      this.board[x][y] != this.turn
+    ) {
+      return;
     }
 
     x -= i;
     y -= j;
 
-    while(x !== rc[0] || y !== rc[1])
-    {
-        this.board[x][y] = this.turn;
-        x -= i;
-        y -= j;
+    while (x !== rc[0] || y !== rc[1]) {
+      this.board[x][y] = this.turn;
+      x -= i;
+      y -= j;
     }
   }
 
@@ -88,20 +85,19 @@ export class Reversi {
   }
 
   private board: SquareState[][] = [
-    ['-', '-', '-', '-', '-', '-', '-', '-'],
-    ['-', '-', '-', '-', '-', '-', '-', '-'],
-    ['-', '-', '-', '-', '-', '-', '-', '-'],
-    ['-', '-', '-', 'w', 'b', '-', '-', '-'],
-    ['-', '-', '-', 'b', 'w', '-', '-', '-'],
-    ['-', '-', '-', '-', '-', '-', '-', '-'],
-    ['-', '-', '-', '-', '-', '-', '-', '-'],
-    ['-', '-', '-', '-', '-', '-', '-', '-'],
+    ["-", "-", "-", "-", "-", "-", "-", "-"],
+    ["-", "-", "-", "-", "-", "-", "-", "-"],
+    ["-", "-", "-", "-", "-", "-", "-", "-"],
+    ["-", "-", "-", "w", "b", "-", "-", "-"],
+    ["-", "-", "-", "b", "w", "-", "-", "-"],
+    ["-", "-", "-", "-", "-", "-", "-", "-"],
+    ["-", "-", "-", "-", "-", "-", "-", "-"],
+    ["-", "-", "-", "-", "-", "-", "-", "-"],
   ];
-  private turn: Turn = 'b';
+  private turn: Turn = "b";
 
-  private b(turn: Turn): Turn 
-  {
-    return turn === 'b'? 'w' : 'b';
+  private b(turn: Turn): Turn {
+    return turn === "b" ? "w" : "b";
   }
 
   public getBoard(): SquareState[][] {
@@ -111,13 +107,12 @@ export class Reversi {
   public getHintBoard(): SquareState[][] {
     const hintBoard = structuredClone(this.board);
 
-    [...Array(8).keys()].forEach((i) => 
-    {
-        [...Array(8).keys()].forEach((j) => {
-            if(this.canPut([i, j])) {
-                hintBoard[i][j] = 'h';
-            }
-        });
+    [...Array(8).keys()].forEach((i) => {
+      [...Array(8).keys()].forEach((j) => {
+        if (this.canPut([i, j])) {
+          hintBoard[i][j] = "h";
+        }
+      });
     });
     return hintBoard;
   }

@@ -23,11 +23,11 @@ export function Board() {
     // if (!reversi.isUserTurn()) {
     //   return;
     // }
-  
+
     reversi.put(getRowCol(ev));
     setIsDrawing(true);
   }
-  
+
   useEffect(() => {
     const canvas = canvasRef.current;
     const context = canvasRef.current?.getContext("2d");
@@ -83,7 +83,7 @@ function drawBoardItem(
     context.lineWidth = 1;
     context.stroke();
   }
-  
+
   if (item == "h") {
     context.beginPath();
     context.arc(
@@ -93,9 +93,9 @@ function drawBoardItem(
       0,
       Math.PI * 2,
     );
-    context.fillStyle = 'green'
+    context.fillStyle = "green";
     context.fill();
-    context.strokeStyle = 'black';
+    context.strokeStyle = "black";
     context.lineWidth = 1;
     context.stroke();
   }
