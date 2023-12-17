@@ -1,7 +1,24 @@
-type Turn = "b" | "w";
-type SquareState = Turn | "-" | "h";
+export type Disk = "b" | "w";
+export type CPUStrength = "Easy" | "Middle" | "Hard";
+export type OnGameChange = (
+  blackCount: number,
+  whiteCount: number,
+  gameOver: boolean,
+) => void;
+type SquareState = Disk | "-" | "h";
 
 export class Reversi {
+  constructor(
+    playerColor: Disk,
+    aiStrength: CPUStrength,
+    onGameChange: OnGameChange,
+  ) {
+    this.turn = "b";
+    this.playerColor = playerColor;
+    this.cpuStrength = aiStrength;
+    this.onGameChange = onGameChange;
+  }
+
   private Direction = [
     [-1, -1],
     [-1, 0],
@@ -77,7 +94,40 @@ export class Reversi {
     this.board[rc[0]][rc[1]] = this.turn;
     this.Direction.forEach((v) => this.putDirection(rc, v[0], v[1]));
     this.turn = this.b(this.turn);
+
+    let gameOver = false;
+    if (!this.canNext()) {
+      this.turn = this.b(this.turn);
+      if (!this.canNext()) {
+        gameOver = true;
+      }
+    }
+    const score = this.getScore();
+    this.onGameChange(score.blackCount, score.whiteCount, gameOver);
     return true;
+  }
+
+  canNext(): boolean {
+    for (let i = 0; i < 8; ++i) {
+      for (let j = 0; j < 8; ++j) {
+        if (this.canPut([i, j])) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  getScore(): { blackCount: number; whiteCount: number } {
+    let blackCount = 0;
+    let whiteCount = 0;
+    [...Array(8).keys()].forEach((i) => {
+      [...Array(8).keys()].forEach((j) => {
+        if (this.board[i][j] == "b") ++blackCount;
+        if (this.board[i][j] == "w") ++whiteCount;
+      });
+    });
+    return { blackCount, whiteCount };
   }
 
   isUserTurn() {
@@ -94,9 +144,8 @@ export class Reversi {
     ["-", "-", "-", "-", "-", "-", "-", "-"],
     ["-", "-", "-", "-", "-", "-", "-", "-"],
   ];
-  private turn: Turn = "b";
 
-  private b(turn: Turn): Turn {
+  private b(turn: Disk): Disk {
     return turn === "b" ? "w" : "b";
   }
 
@@ -116,4 +165,17 @@ export class Reversi {
     });
     return hintBoard;
   }
+
+  public getPlayerColor() {
+    return this.playerColor;
+  }
+
+  public getAIName() {
+    return this.cpuStrength;
+  }
+
+  private turn: Disk;
+  private playerColor: Disk;
+  private cpuStrength: CPUStrength;
+  private onGameChange: OnGameChange;
 }

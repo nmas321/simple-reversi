@@ -1,24 +1,25 @@
 import { useState } from "preact/hooks";
 import { JSX } from "preact/jsx-runtime";
+import { CPUStrength, Disk } from "../components/Reversi.ts";
 
 interface StartScreenProps {
-  onStartGame: (color: string, strength: string) => void;
+  onStartGame: (color: Disk, strength: CPUStrength) => void;
 }
 
 export function StartScreen(props: StartScreenProps) {
-  const [playerColor, setPlayerColor] = useState("black");
-  const [aiStrength, setAiStrength] = useState("easy");
+  const [playerColor, setPlayerColor] = useState<Disk>("b");
+  const [aiStrength, setAiStrength] = useState<CPUStrength>("easy");
 
   function handleColorChange(
     event: JSX.TargetedEvent<HTMLSelectElement, Event>,
   ): void {
-    setPlayerColor(event.currentTarget.value);
+    setPlayerColor(event.currentTarget.value == "black" ? "b" : "w");
   }
 
   function handleAiStrengthChange(
     event: JSX.TargetedEvent<HTMLSelectElement, Event>,
   ): void {
-    setAiStrength(event.currentTarget.value);
+    setAiStrength(event.currentTarget.value as CPUStrength);
   }
 
   function handleStartGame(
@@ -32,8 +33,8 @@ export function StartScreen(props: StartScreenProps) {
       <label>
         Select Your Color:
         <select value={playerColor} onChange={handleColorChange}>
-          <option value="black">Black</option>
-          <option value="white">White</option>
+          <option value="b">Black</option>
+          <option value="w">White</option>
         </select>
       </label>
       <br />

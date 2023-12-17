@@ -1,14 +1,11 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { Reversi } from "../components/Reversi.ts";
 
-const reversi = new Reversi();
-
 const BoardItemSize = 72;
 const BoardSize = BoardItemSize * 8;
 
 interface ReversiBoardProps {
-  playerColor: string;
-  aiStrength: string;
+  reversi: Reversi;
 }
 
 export function ReversiBoard(props: ReversiBoardProps) {
@@ -28,11 +25,7 @@ export function ReversiBoard(props: ReversiBoardProps) {
   }
 
   function onclick(ev: MouseEvent): any {
-    // if (!reversi.isUserTurn()) {
-    //   return;
-    // }
-
-    reversi.put(getRowCol(ev));
+    props.reversi.put(getRowCol(ev));
     setIsDrawing(true);
   }
 
@@ -45,7 +38,7 @@ export function ReversiBoard(props: ReversiBoardProps) {
     canvas.style.margin = "10px";
     canvas.width = BoardSize;
     canvas.height = BoardSize;
-    const b = reversi.getHintBoard();
+    const b = props.reversi.getHintBoard();
     drawBoard(b, context);
     canvas.onclick = onclick;
     setIsDrawing(false);

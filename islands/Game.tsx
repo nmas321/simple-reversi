@@ -1,31 +1,75 @@
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import { ReversiBoard } from "./ReversiBoard.tsx";
 import StartScreen from "./StartScreen.tsx";
+import { CPUStrength, Disk, Reversi } from "../components/Reversi.ts";
+
+type GameState = "start" | "game" | "end";
 
 export function Game() {
-  const [isGameStarted, setIsGameStarted] = useState(false);
-  const [playerColor, setPlayerColor] = useState("");
-  const [aiStrength, setAiStrength] = useState("");
+  const [gameState, setGameState] = useState<GameState>("start");
+  const [reversi, setReversi] = useState<Reversi | undefined>(undefined);
+  const [[blackCount, whiteCount], setScore] = useState<[number, number]>([
+    2,
+    2,
+  ]);
 
-  const startGame = (color: string, strength: string) => {
-    setPlayerColor(color);
-    setAiStrength(strength);
-    setIsGameStarted(true);
+  const startGame = (playerColor: Disk, strength: CPUStrength) => {
+    setReversi(new Reversi(playerColor, strength, gameChange));
+    setGameState("game");
   };
+
+  const gameChange = (
+    blackCount: number,
+    whiteCount: number,
+    gameOver: boolean,
+  ) => {
+    setScore([blackCount, whiteCount]);
+    if (gameOver) {
+      setGameState("end");
+    }
+  };
+
+  if (reversi !== undefined) {
+    let yourScore = blackCount;
+    let cpuScore = whiteCount;
+    if (reversi.getPlayerColor() == "w") {
+      [yourScore, cpuScore] = [cpuScore, yourScore];
+    }
+
+    if (gameState == "game") {
+      return (
+        <div>
+          <p>
+            Player Color: {reversi.getPlayerColor() == "b" ? "Black" : "White"}
+          </p>
+          <p>CPU Strength: {reversi.getAIName()}</p>
+          <p>Score: You {yourScore} vs CPU {cpuScore}</p>
+          <ReversiBoard reversi={reversi} />
+        </div>
+      );
+    }
+
+    if (gameState == "end") {
+      let message = "🎉 Win!!! 🎉";
+      if (yourScore == cpuScore) {
+        message = "🤷 Draw 🤷";
+      } else if (yourScore < cpuScore) {
+        message = "😞 Lose... 😞";
+      }
+      return (
+        <div>
+          <p>Game Over</p>
+          <p>{message}</p>
+          <ReversiBoard reversi={reversi} />
+        </div>
+      );
+    }
+  }
 
   return (
     <div>
-      {isGameStarted
-        ? (
-          <div>
-            <h2>Reversi Game</h2>
-            <p>Player Color: {playerColor}</p>
-            <p>AI Strength: {aiStrength}</p>
-            <ReversiBoard playerColor={playerColor} aiStrength={aiStrength}>
-            </ReversiBoard>
-          </div>
-        )
-        : <StartScreen onStartGame={startGame} />}
+      <h2>Reversi Game</h2>
+      <StartScreen onStartGame={startGame} />
     </div>
   );
 }
