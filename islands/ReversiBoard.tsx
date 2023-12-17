@@ -25,7 +25,7 @@ export function ReversiBoard(props: ReversiBoardProps) {
   }
 
   function onclick(ev: MouseEvent): any {
-    props.reversi.put(getRowCol(ev));
+    props.reversi.putPlayer(getRowCol(ev));
     setIsDrawing(true);
   }
 

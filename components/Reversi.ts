@@ -17,6 +17,10 @@ export class Reversi {
     this.playerColor = playerColor;
     this.cpuStrength = aiStrength;
     this.onGameChange = onGameChange;
+    if(this.turn != this.playerColor)
+    {
+      this.putCPU();
+    }
   }
 
   private Direction = [
@@ -87,6 +91,24 @@ export class Reversi {
     }
   }
 
+  isGameOver(): boolean {
+    let gameOver = false;
+    if (!this.canNext()) {
+      this.turn = this.b(this.turn);
+      if (!this.canNext()) {
+        gameOver = true;
+      }
+    }
+    return gameOver;
+  }
+
+  putPlayer(rc: [number, number]): void {
+    this.put(rc);
+    while(this.turn != this.playerColor){
+      if(!this.putCPU()) break;
+    }
+  }
+
   put(rc: [number, number]): boolean {
     if (!this.canPut(rc)) {
       return false;
@@ -95,15 +117,10 @@ export class Reversi {
     this.Direction.forEach((v) => this.putDirection(rc, v[0], v[1]));
     this.turn = this.b(this.turn);
 
-    let gameOver = false;
-    if (!this.canNext()) {
-      this.turn = this.b(this.turn);
-      if (!this.canNext()) {
-        gameOver = true;
-      }
-    }
+    const gameOver = this.isGameOver();
     const score = this.getScore();
     this.onGameChange(score.blackCount, score.whiteCount, gameOver);
+
     return true;
   }
 
@@ -118,6 +135,30 @@ export class Reversi {
     return false;
   }
 
+  getNextList(): [number, number][]{
+    const ret: [number, number][] = [];
+
+    for (let i = 0; i < 8; ++i) {
+      for (let j = 0; j < 8; ++j) {
+        if (this.canPut([i, j])) {
+          ret.push([i, j]);
+        }
+      }
+    }
+    return ret;
+  }
+
+  putCPU(): boolean
+  {
+    const nextList = this.getNextList();
+
+    if(nextList.length == 0) return false;
+    
+    this.put(nextList[Math.floor(Math.random() * nextList.length)]);
+
+    return true;
+  }
+
   getScore(): { blackCount: number; whiteCount: number } {
     let blackCount = 0;
     let whiteCount = 0;
@@ -128,10 +169,6 @@ export class Reversi {
       });
     });
     return { blackCount, whiteCount };
-  }
-
-  isUserTurn() {
-    return this.turn === "b";
   }
 
   private board: SquareState[][] = [
