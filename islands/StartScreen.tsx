@@ -8,7 +8,7 @@ interface StartScreenProps {
 
 export function StartScreen(props: StartScreenProps) {
   const [playerColor, setPlayerColor] = useState<Disk>("b");
-  const [aiStrength, setAiStrength] = useState<CPUStrength>("Easy");
+  const [aiStrength, setAiStrength] = useState<CPUStrength>("Normal");
 
   function handleColorChange(
     event: JSX.TargetedEvent<HTMLSelectElement, Event>,
@@ -42,7 +42,7 @@ export function StartScreen(props: StartScreenProps) {
         Select AI Strength:
         <select value={aiStrength} onChange={handleAiStrengthChange}>
           <option value="Easy">Easy</option>
-          <option value="Medium">Medium</option>
+          <option value="Normal">Normal</option>
           <option value="Hard">Hard</option>
         </select>
       </label>

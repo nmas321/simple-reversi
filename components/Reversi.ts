@@ -188,8 +188,8 @@ export class Reversi {
     }
 
     for (const child of nextList) {
-      const newBoard = board.getClone();
-      newBoard.put(child);
+      const newBoard = board.getClone(child);
+
       if (isPlayerTurn) {
         beta = Math.min(beta, this.alphabeta(newBoard, depth - 1, alpha, beta));
         if (alpha >= beta) {
@@ -217,11 +217,8 @@ export class Reversi {
     }
 
     const list = nextList.map((item) => {
-      const newBoard = this.getClone();
-      newBoard.put(item);
-
-      const point = this.alphabeta(newBoard, 5, -10000, 100000);
-
+      const newBoard = this.getClone(item);
+      const point = this.alphabeta(newBoard, 3, -10000, 100000);
       return { item, point };
     }).sort((v, v2) => v2.point - v.point);
 
@@ -293,12 +290,15 @@ export class Reversi {
     return this.cpuStrength;
   }
 
-  public getClone(): Reversi {
+  public getClone(rc: [number, number] | undefined = undefined): Reversi {
     const reversi = new Reversi(this.playerColor, this.cpuStrength, null);
     reversi.turn = this.turn;
     reversi.playerColor = this.playerColor;
     reversi.board = structuredClone(this.board);
 
+    if (rc) {
+      reversi.put(rc);
+    }
     return reversi;
   }
 
