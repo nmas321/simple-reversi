@@ -1,5 +1,5 @@
 export type Disk = "b" | "w";
-export type CPUStrength = "Easy" | "Middle" | "Hard";
+export type CPUStrength = "Easy" | "Normal" | "Hard";
 export type OnGameChange = (
   blackCount: number,
   whiteCount: number,
@@ -17,8 +17,7 @@ export class Reversi {
     this.playerColor = playerColor;
     this.cpuStrength = aiStrength;
     this.onGameChange = onGameChange;
-    if(this.turn != this.playerColor)
-    {
+    if (this.turn != this.playerColor) {
       this.putCPU();
     }
   }
@@ -104,8 +103,8 @@ export class Reversi {
 
   putPlayer(rc: [number, number]): void {
     this.put(rc);
-    while(this.turn != this.playerColor){
-      if(!this.putCPU()) break;
+    while (this.turn != this.playerColor) {
+      if (!this.putCPU()) break;
     }
   }
 
@@ -119,7 +118,7 @@ export class Reversi {
 
     const gameOver = this.isGameOver();
     const score = this.getScore();
-    if(this.onGameChange) {
+    if (this.onGameChange) {
       this.onGameChange(score.blackCount, score.whiteCount, gameOver);
     }
 
@@ -137,7 +136,7 @@ export class Reversi {
     return false;
   }
 
-  getNextList(): [number, number][]{
+  getNextList(): [number, number][] {
     const ret: [number, number][] = [];
 
     for (let i = 0; i < 8; ++i) {
@@ -150,26 +149,27 @@ export class Reversi {
     return ret;
   }
 
-  easyPutCpu(): boolean
-  {
+  easyPutCpu(): boolean {
     const nextList = this.getNextList();
 
-    if(nextList.length == 0) return false;
-    
+    if (nextList.length == 0) return false;
+
     this.put(nextList[Math.floor(Math.random() * nextList.length)]);
 
     return true;
   }
 
-  hardPutCpu(): boolean
-  {
+  hardPutCpu(): boolean {
     return this.easyPutCpu();
   }
 
-  alphabeta(board: Reversi, depth: number, alpha: number, beta: number): number
-  {
-    if(board.isGameOver())
-    {
+  alphabeta(
+    board: Reversi,
+    depth: number,
+    alpha: number,
+    beta: number,
+  ): number {
+    if (board.isGameOver()) {
       return board.getAbsoluteScore(this.b(this.playerColor)) * 100;
     }
 
@@ -177,52 +177,52 @@ export class Reversi {
 
     const isPlayerTurn = board.getCurrentTurn() == this.playerColor;
 
-    if(depth == 0)
-    {
-      const newBoard =  board.getClone();
+    if (depth == 0) {
+      const newBoard = board.getClone();
       newBoard.turn = this.b(board.getCurrentTurn());
       const enemyPoint = newBoard.getNextList().length;
 
-      return isPlayerTurn ? 
-        nextList.length - enemyPoint : 
-        enemyPoint - nextList.length;
+      return isPlayerTurn
+        ? nextList.length - enemyPoint
+        : enemyPoint - nextList.length;
     }
 
-    for(const child of nextList)
-    {
+    for (const child of nextList) {
       const newBoard = board.getClone();
       newBoard.put(child);
-      if(isPlayerTurn){
+      if (isPlayerTurn) {
         beta = Math.min(beta, this.alphabeta(newBoard, depth - 1, alpha, beta));
-        if(alpha >= beta) {
+        if (alpha >= beta) {
           return beta;
         }
-      }else{
-        alpha = Math.max(alpha, this.alphabeta(newBoard, depth - 1, alpha, beta));
-        if(alpha >= beta) {
+      } else {
+        alpha = Math.max(
+          alpha,
+          this.alphabeta(newBoard, depth - 1, alpha, beta),
+        );
+        if (alpha >= beta) {
           return alpha;
         }
       }
     }
-    
+
     return isPlayerTurn ? beta : alpha;
   }
 
-  middlePutCpu(): boolean
-  {
+  normalPutCpu(): boolean {
     const nextList = this.getNextList();
 
-    if(nextList.length == 0) {
+    if (nextList.length == 0) {
       return false;
     }
 
     const list = nextList.map((item) => {
       const newBoard = this.getClone();
       newBoard.put(item);
-      
+
       const point = this.alphabeta(newBoard, 5, -10000, 100000);
 
-      return {item, point}
+      return { item, point };
     }).sort((v, v2) => v2.point - v.point);
 
     this.put(list[0].item);
@@ -230,17 +230,16 @@ export class Reversi {
     return true;
   }
 
-  putCPU(): boolean
-  {
-    if(this.cpuStrength == 'Easy') {
+  putCPU(): boolean {
+    if (this.cpuStrength == "Easy") {
       return this.easyPutCpu();
     }
 
-    if(this.cpuStrength == 'Hard') {
+    if (this.cpuStrength == "Hard") {
       return this.hardPutCpu();
     }
 
-    return this.middlePutCpu();
+    return this.normalPutCpu();
   }
 
   getScore(): { blackCount: number; whiteCount: number } {
@@ -258,7 +257,7 @@ export class Reversi {
   getAbsoluteScore(from: Disk) {
     const score = this.getScore();
     const absoluteScore = score.blackCount - score.whiteCount;
-    return from == 'b' ? absoluteScore : -absoluteScore;
+    return from == "b" ? absoluteScore : -absoluteScore;
   }
 
   private b(turn: Disk): Disk {
@@ -294,7 +293,7 @@ export class Reversi {
     return this.cpuStrength;
   }
 
-  public getClone() : Reversi{
+  public getClone(): Reversi {
     const reversi = new Reversi(this.playerColor, this.cpuStrength, null);
     reversi.turn = this.turn;
     reversi.playerColor = this.playerColor;
