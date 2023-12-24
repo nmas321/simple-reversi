@@ -11,7 +11,7 @@ export class Reversi {
   constructor(
     playerColor: Disk,
     aiStrength: CPUStrength,
-    onGameChange: OnGameChange,
+    onGameChange: OnGameChange | null,
   ) {
     this.turn = "b";
     this.playerColor = playerColor;
@@ -119,7 +119,9 @@ export class Reversi {
 
     const gameOver = this.isGameOver();
     const score = this.getScore();
-    this.onGameChange(score.blackCount, score.whiteCount, gameOver);
+    if(this.onGameChange) {
+      this.onGameChange(score.blackCount, score.whiteCount, gameOver);
+    }
 
     return true;
   }
@@ -148,7 +150,7 @@ export class Reversi {
     return ret;
   }
 
-  putCPU(): boolean
+  easyPutCpu(): boolean
   {
     const nextList = this.getNextList();
 
@@ -157,6 +159,88 @@ export class Reversi {
     this.put(nextList[Math.floor(Math.random() * nextList.length)]);
 
     return true;
+  }
+
+  hardPutCpu(): boolean
+  {
+    return this.easyPutCpu();
+  }
+
+  alphabeta(board: Reversi, depth: number, alpha: number, beta: number): number
+  {
+    if(board.isGameOver())
+    {
+      return board.getAbsoluteScore(this.b(this.playerColor)) * 100;
+    }
+
+    const nextList = board.getNextList();
+
+    const isPlayerTurn = board.getCurrentTurn() == this.playerColor;
+
+    if(depth == 0)
+    {
+      const newBoard =  board.getClone();
+      newBoard.turn = this.b(board.getCurrentTurn());
+      const enemyPoint = newBoard.getNextList().length;
+
+      return isPlayerTurn ? 
+        nextList.length - enemyPoint : 
+        enemyPoint - nextList.length;
+    }
+
+    for(const child of nextList)
+    {
+      const newBoard = board.getClone();
+      newBoard.put(child);
+      if(isPlayerTurn){
+        beta = Math.min(beta, this.alphabeta(newBoard, depth - 1, alpha, beta));
+        if(alpha >= beta) {
+          return beta;
+        }
+      }else{
+        alpha = Math.max(alpha, this.alphabeta(newBoard, depth - 1, alpha, beta));
+        if(alpha >= beta) {
+          return alpha;
+        }
+      }
+    }
+    
+    return isPlayerTurn ? beta : alpha;
+  }
+
+  middlePutCpu(): boolean
+  {
+    const nextList = this.getNextList();
+
+    if(nextList.length == 0) {
+      return false;
+    }
+
+    const list = nextList.map((item) => {
+      const newBoard = this.getClone();
+      newBoard.put(item);
+      
+      const point = this.alphabeta(newBoard, 5, -10000, 100000);
+
+      return {item, point}
+    }).sort((v, v2) => v2.point - v.point);
+
+    this.put(list[0].item);
+
+    return true;
+  }
+
+  putCPU(): boolean
+  {
+    if(this.cpuStrength == 'Easy') {
+      return this.easyPutCpu();
+    }
+
+    if(this.cpuStrength == 'Hard') {
+      return this.hardPutCpu();
+    }
+
+    return this.middlePutCpu();
   }
 
   getScore(): { blackCount: number; whiteCount: number } {
@@ -171,16 +255,11 @@ export class Reversi {
     return { blackCount, whiteCount };
   }
 
-  private board: SquareState[][] = [
-    ["-", "-", "-", "-", "-", "-", "-", "-"],
-    ["-", "-", "-", "-", "-", "-", "-", "-"],
-    ["-", "-", "-", "-", "-", "-", "-", "-"],
-    ["-", "-", "-", "w", "b", "-", "-", "-"],
-    ["-", "-", "-", "b", "w", "-", "-", "-"],
-    ["-", "-", "-", "-", "-", "-", "-", "-"],
-    ["-", "-", "-", "-", "-", "-", "-", "-"],
-    ["-", "-", "-", "-", "-", "-", "-", "-"],
-  ];
+  getAbsoluteScore(from: Disk) {
+    const score = this.getScore();
+    const absoluteScore = score.blackCount - score.whiteCount;
+    return from == 'b' ? absoluteScore : -absoluteScore;
+  }
 
   private b(turn: Disk): Disk {
     return turn === "b" ? "w" : "b";
@@ -207,12 +286,36 @@ export class Reversi {
     return this.playerColor;
   }
 
+  public getCurrentTurn() {
+    return this.turn;
+  }
+
   public getAIName() {
     return this.cpuStrength;
   }
 
+  public getClone() : Reversi{
+    const reversi = new Reversi(this.playerColor, this.cpuStrength, null);
+    reversi.turn = this.turn;
+    reversi.playerColor = this.playerColor;
+    reversi.board = structuredClone(this.board);
+
+    return reversi;
+  }
+
+  private board: SquareState[][] = [
+    ["-", "-", "-", "-", "-", "-", "-", "-"],
+    ["-", "-", "-", "-", "-", "-", "-", "-"],
+    ["-", "-", "-", "-", "-", "-", "-", "-"],
+    ["-", "-", "-", "w", "b", "-", "-", "-"],
+    ["-", "-", "-", "b", "w", "-", "-", "-"],
+    ["-", "-", "-", "-", "-", "-", "-", "-"],
+    ["-", "-", "-", "-", "-", "-", "-", "-"],
+    ["-", "-", "-", "-", "-", "-", "-", "-"],
+  ];
+
   private turn: Disk;
   private playerColor: Disk;
   private cpuStrength: CPUStrength;
-  private onGameChange: OnGameChange;
+  private onGameChange: OnGameChange | null;
 }

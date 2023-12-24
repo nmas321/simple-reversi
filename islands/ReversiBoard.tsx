@@ -24,6 +24,7 @@ export function ReversiBoard(props: ReversiBoardProps) {
     ];
   }
 
+  // deno-lint-ignore no-explicit-any
   function onclick(ev: MouseEvent): any {
     props.reversi.putPlayer(getRowCol(ev));
     setIsDrawing(true);
