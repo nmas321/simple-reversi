@@ -12,12 +12,13 @@ export class Reversi {
     playerColor: Disk,
     aiStrength: CPUStrength,
     onGameChange: OnGameChange | null,
+    moveCpu: boolean = false,
   ) {
     this.turn = "b";
     this.playerColor = playerColor;
     this.cpuStrength = aiStrength;
     this.onGameChange = onGameChange;
-    if (this.turn != this.playerColor) {
+    if(moveCpu) {
       this.putCPU();
     }
   }

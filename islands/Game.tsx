@@ -14,7 +14,7 @@ export function Game() {
   ]);
 
   const startGame = (playerColor: Disk, strength: CPUStrength) => {
-    setReversi(new Reversi(playerColor, strength, gameChange));
+    setReversi(new Reversi(playerColor, strength, gameChange, true));
     setGameState("game");
   };
 
@@ -68,7 +68,6 @@ export function Game() {
 
   return (
     <div>
-      <h2>Reversi Game</h2>
       <StartScreen onStartGame={startGame} />
     </div>
   );
