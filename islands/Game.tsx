@@ -14,7 +14,11 @@ export function Game() {
   ]);
 
   const startGame = (playerColor: Disk, strength: CPUStrength) => {
-    setReversi(new Reversi(playerColor, strength, gameChange, true));
+    const reversi = new Reversi(playerColor, strength, gameChange);
+    if(playerColor == 'w') {
+      reversi.putCPU();
+    }
+    setReversi(reversi);
     setGameState("game");
   };
 

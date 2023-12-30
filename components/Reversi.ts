@@ -11,16 +11,12 @@ export class Reversi {
   constructor(
     playerColor: Disk,
     aiStrength: CPUStrength,
-    onGameChange: OnGameChange | null,
-    moveCpu: boolean = false,
+    onGameChange: OnGameChange | null
   ) {
     this.turn = "b";
     this.playerColor = playerColor;
     this.cpuStrength = aiStrength;
     this.onGameChange = onGameChange;
-    if(moveCpu) {
-      this.putCPU();
-    }
   }
 
   private Direction = [
@@ -160,8 +156,18 @@ export class Reversi {
     return true;
   }
 
+  hardBoardScore(board: Reversi): number{
+    const nextList = board.getNextList();
+    const isPlayerTurn = board.getCurrentTurn() == board.getPlayerColor();
+    const newBoard = board.getClone();
+    newBoard.turn = board.b(board.getCurrentTurn());
+    const eCount = newBoard.getCurrentTurn().length;
+    
+    return this.getConfirmedPoint(board) * 100 + (isPlayerTurn ? eCount-nextList.length : nextList.length-eCount);
+  }
+
   hardPutCpu(): boolean {
-    return this.easyPutCpu();
+    return this.alphabetaSearch(this.hardBoardScore);
   }
 
   alphabeta(
@@ -169,37 +175,34 @@ export class Reversi {
     depth: number,
     alpha: number,
     beta: number,
+    getBoardScore: (board: Reversi) => number
   ): number {
     if (board.isGameOver()) {
-      return board.getAbsoluteScore(this.b(this.playerColor)) * 100;
+      return board.getAbsoluteScore() * 1000;
     }
-
-    const nextList = board.getNextList();
-
-    const isPlayerTurn = board.getCurrentTurn() == this.playerColor;
 
     if (depth == 0) {
-      const newBoard = board.getClone();
-      newBoard.turn = this.b(board.getCurrentTurn());
-      const enemyPoint = newBoard.getNextList().length;
-
-      return isPlayerTurn
-        ? nextList.length - enemyPoint
-        : enemyPoint - nextList.length;
+      return getBoardScore(board);
     }
+
+    const isPlayerTurn = board.getCurrentTurn() == this.playerColor;
+    const nextList = board.getNextList();
 
     for (const child of nextList) {
       const newBoard = board.getClone(child);
 
       if (isPlayerTurn) {
-        beta = Math.min(beta, this.alphabeta(newBoard, depth - 1, alpha, beta));
+        beta = Math.min(
+          beta,
+          this.alphabeta(newBoard, depth - 1, alpha, beta, getBoardScore),
+        );
         if (alpha >= beta) {
           return beta;
         }
       } else {
         alpha = Math.max(
           alpha,
-          this.alphabeta(newBoard, depth - 1, alpha, beta),
+          this.alphabeta(newBoard, depth - 1, alpha, beta, getBoardScore),
         );
         if (alpha >= beta) {
           return alpha;
@@ -210,7 +213,77 @@ export class Reversi {
     return isPlayerTurn ? beta : alpha;
   }
 
-  normalPutCpu(): boolean {
+  isConfirmed(i: number, j: number, board: Reversi): boolean
+  {
+    const item = board.board[i][j] as Disk;
+
+    if(board.board[i][j] == '-') return false;
+
+    const confirmDirection = [
+      [-1, -1],
+      [-1, 0],
+      [-1, 1],
+      [0, 1],
+    ];
+
+    for(const d of confirmDirection){
+      let x = i + d[0];
+      let y = j + d[1];
+
+      while (board.within(x, y) && board.board[i][j] == item) {
+        x += d[0];
+        y += d[1];
+      }
+      const l = !board.within(x, y);
+      
+      x = i - d[0];
+      y = j - d[1];
+
+      while (board.within(x, y) && board.board[i][j] == item) {
+        x -= d[0];
+        y -= d[1];
+      }
+      
+      const r = !board.within(x, y);
+      if(l && r) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  getConfirmedPoint(board: Reversi): number{
+    let wc = 0;
+    let bc = 0;
+    [...Array(8).keys()].forEach((i) => {
+      [...Array(8).keys()].forEach((j) => {
+        if(board.board[i][j] == '-') return;
+        if(board.isConfirmed(i, j, board)){
+          if(board.board[i][j] === 'w') ++wc;
+          if(board.board[i][j] === 'b') ++bc;
+        }
+      });
+    });
+    if(board.playerColor == 'b') return wc - bc;
+    return bc - wc;
+  }
+
+  normalBoardScore(board: Reversi): number{
+    const nextList = board.getNextList();
+    const isPlayerTurn = board.getCurrentTurn() == board.getPlayerColor();
+    const newBoard = board.getClone();
+    newBoard.turn = board.b(board.getCurrentTurn());
+    const eCount = newBoard.getCurrentTurn().length;
+    
+    return isPlayerTurn ? eCount-nextList.length : nextList.length-eCount;
+  }
+
+  normalPutCpu()
+  {
+    return this.alphabetaSearch(this.normalBoardScore);
+  }
+
+  alphabetaSearch(getBoardScore: (board: Reversi) => number): boolean {
     const nextList = this.getNextList();
 
     if (nextList.length == 0) {
@@ -219,7 +292,7 @@ export class Reversi {
 
     const list = nextList.map((item) => {
       const newBoard = this.getClone(item);
-      const point = this.alphabeta(newBoard, 3, -10000, 100000);
+      const point = this.alphabeta(newBoard, 3, -100000, 1000000, getBoardScore);
       return { item, point };
     }).sort((v, v2) => v2.point - v.point);
 
@@ -252,10 +325,10 @@ export class Reversi {
     return { blackCount, whiteCount };
   }
 
-  getAbsoluteScore(from: Disk) {
+  getAbsoluteScore() {
     const score = this.getScore();
     const absoluteScore = score.blackCount - score.whiteCount;
-    return from == "b" ? absoluteScore : -absoluteScore;
+    return this.getPlayerColor() == "b" ? -absoluteScore : absoluteScore;
   }
 
   private b(turn: Disk): Disk {
@@ -318,4 +391,10 @@ export class Reversi {
   private playerColor: Disk;
   private cpuStrength: CPUStrength;
   private onGameChange: OnGameChange | null;
+}
+
+
+export class ReversiUtil
+{
+  
 }
