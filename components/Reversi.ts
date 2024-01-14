@@ -33,14 +33,14 @@ export class Reversi {
   private canPutDirection(rc: [number, number], i: number, j: number): boolean {
     let x = rc[0] + i;
     let y = rc[1] + j;
-    if (!this.within(x, y)) return false;
+    if (!Reversi.within(x, y)) return false;
 
-    while (this.within(x, y) && this.board[x][y] === this.b(this.turn)) {
+    while (Reversi.within(x, y) && this.board[x][y] === this.b(this.turn)) {
       x += i;
       y += j;
     }
 
-    return !((x === (rc[0] + i) && y === (rc[1] + j)) || !this.within(x, y) ||
+    return !((x === (rc[0] + i) && y === (rc[1] + j)) || !Reversi.within(x, y) ||
       this.board[x][y] != this.turn);
   }
 
@@ -56,22 +56,22 @@ export class Reversi {
     return false;
   }
 
-  private within(x: number, y: number) {
+  private static within(x: number, y: number) {
     return x >= 0 && x <= 7 && y >= 0 && y <= 7;
   }
 
   private putDirection(rc: [number, number], i: number, j: number): void {
     let x = rc[0] + i;
     let y = rc[1] + j;
-    if (!this.within(x, y)) return;
+    if (!Reversi.within(x, y)) return;
 
-    while (this.within(x, y) && this.board[x][y] === this.b(this.turn)) {
+    while (Reversi.within(x, y) && this.board[x][y] === this.b(this.turn)) {
       x += i;
       y += j;
     }
 
     if (
-      (x === (rc[0] + i) && y === (rc[1] + j)) || !this.within(x, y) ||
+      (x === (rc[0] + i) && y === (rc[1] + j)) || !Reversi.within(x, y) ||
       this.board[x][y] != this.turn
     ) {
       return;
@@ -163,7 +163,7 @@ export class Reversi {
     newBoard.turn = board.b(board.getCurrentTurn());
     const eCount = newBoard.getCurrentTurn().length;
     
-    return this.getConfirmedPoint(board) * 100 + (isPlayerTurn ? eCount-nextList.length : nextList.length-eCount);
+    return Reversi.getConfirmedPoint(board, board.getPlayerColor()) * 100 + (isPlayerTurn ? eCount-nextList.length : nextList.length-eCount);
   }
 
   hardPutCpu(): boolean {
@@ -213,7 +213,7 @@ export class Reversi {
     return isPlayerTurn ? beta : alpha;
   }
 
-  isConfirmed(i: number, j: number, board: Reversi): boolean
+  static isConfirmed(i: number, j: number, board: Reversi): boolean
   {
     const item = board.board[i][j] as Disk;
 
@@ -230,21 +230,21 @@ export class Reversi {
       let x = i + d[0];
       let y = j + d[1];
 
-      while (board.within(x, y) && board.board[i][j] == item) {
+      while (Reversi.within(x, y) && board.board[x][y] == item) {
         x += d[0];
         y += d[1];
       }
-      const l = !board.within(x, y);
+      const l = Reversi.within(x, y);
       
       x = i - d[0];
       y = j - d[1];
 
-      while (board.within(x, y) && board.board[i][j] == item) {
+      while (Reversi.within(x, y) && board.board[x][y] == item) {
         x -= d[0];
         y -= d[1];
       }
       
-      const r = !board.within(x, y);
+      const r = Reversi.within(x, y);
       if(l && r) {
         return false;
       }
@@ -252,20 +252,19 @@ export class Reversi {
     return true;
   }
 
-  getConfirmedPoint(board: Reversi): number{
+  static getConfirmedPoint(board: Reversi, player: Disk): number{
     let wc = 0;
     let bc = 0;
     [...Array(8).keys()].forEach((i) => {
       [...Array(8).keys()].forEach((j) => {
         if(board.board[i][j] == '-') return;
-        if(board.isConfirmed(i, j, board)){
+        if(Reversi.isConfirmed(i, j, board)){
           if(board.board[i][j] === 'w') ++wc;
           if(board.board[i][j] === 'b') ++bc;
         }
       });
     });
-    if(board.playerColor == 'b') return wc - bc;
-    return bc - wc;
+    return player == 'b' ? wc - bc : bc - wc;
   }
 
   normalBoardScore(board: Reversi): number{
@@ -339,6 +338,10 @@ export class Reversi {
     return this.board;
   }
 
+  public setBoard(board: SquareState[][]) {
+    this.board = board;
+  }
+
   public getHintBoard(): SquareState[][] {
     const hintBoard = structuredClone(this.board);
 
@@ -391,10 +394,4 @@ export class Reversi {
   private playerColor: Disk;
   private cpuStrength: CPUStrength;
   private onGameChange: OnGameChange | null;
-}
-
-
-export class ReversiUtil
-{
-  
 }
